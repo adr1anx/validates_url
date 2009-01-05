@@ -1,4 +1,4 @@
-module ValidatesUrl
+module ValidateUrl
   def self.included(base)
     base.extend(ClassMethods)
   end
@@ -16,7 +16,7 @@ https?:// # http:// or https://
 \Z
 }iux
   
-    def validates_url(*attr_names)
+    def validate_url(*attr_names)
       options = { :with => REGEXP,
                   :message => "is invalid",
                   :check_http => false,
@@ -48,4 +48,4 @@ https?:// # http:// or https://
   end
 end
 
-ActiveRecord::Base.class_eval { include ValidatesUrl }
+ActiveRecord::Base.class_eval { include ValidateUrl }

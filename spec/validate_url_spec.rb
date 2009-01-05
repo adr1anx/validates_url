@@ -1,12 +1,12 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
 class User < ActiveRecord::Base
-  validates_url :required_url
-  validates_url :blank_url, :allow_blank => true
-  validates_url :nil_url, :allow_nil => true, :check_http => true, :message => "does not resolve"
+  validate_url :required_url
+  validate_url :blank_url, :allow_blank => true
+  validate_url :nil_url, :allow_nil => true, :check_http => true, :message => "does not resolve"
 end
 
-describe "validates url format" do
+describe "validate url format" do
   
   before :each do
     @user = User.new({:required_url => "http://www.example.com",
