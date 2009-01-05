@@ -4,9 +4,9 @@
 
 <h2>Usage</h2>
 <p>Install, then</p>
-class User < ActiveRecord::Base
-  validate_url :url, :check_http => true
-end
+	class User < ActiveRecord::Base
+  		validate_url :url, :check_http => true
+	end
 
 
 <p>Has the same options as <code>validates_format_of</code> with the addition of <code>check_http</code>.  All
