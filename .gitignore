@@ -1,0 +1,4 @@
+*.log
+install.rb
+uninstall.rb
+tasks
