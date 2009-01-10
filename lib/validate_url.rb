@@ -20,6 +20,7 @@ https?:// # http:// or https://
       options = { :with => REGEXP,
                   :message => "is invalid",
                   :check_http => false,
+                  :check_http_message => "does not resolve",
                   :on => :save }
       options.merge!(attr_names.pop) if attr_names.last.kind_of?(Hash)
       
@@ -30,17 +31,21 @@ https?:// # http:// or https://
         # if were checking to see if the page is actually there...
         if options[:check_http]
           begin # check header response
-            logger.info(value)
-            res = Net::HTTP.get_response(URI.parse(value))
-            logger.info(value)
-            logger.info(res)
-            logger.info(res.code.to_s)
-            case res.code.to_s
-              when "200" then true
-            else record.errors.add(attr_name, options[:message], :value => value) and false
+            res = Net::HTTP.get_response(URI.parse("#{value}"))
+            # 2xx
+            if res.is_a?(Net::HTTPSuccess)
+              true
+            elsif res.is_a?(Net::HTTPInformation) # 1xx
+              record.errors.add(attr_name, options[:check_http_message], :value => value) and false
+            elsif res.is_a?(Net::HTTPRedirection) # 3xx
+              record.errors.add(attr_name, options[:check_http_message], :value => value) and false
+            elsif res.is_a?(Net::HTTPServerError) # 5xx
+              record.errors.add(attr_name, options[:check_http_message], :value => value) and false
+            else # 4xx
+              record.errors.add(attr_name, options[:check_http_message], :value => value) and false
             end
           rescue # Recover on DNS failures..
-           record.errors.add(attr_name, options[:message] + " (DNS)", :value => value) and false
+           record.errors.add(attr_name, options[:check_http_message] + " (DNS failure)", :value => value) and false
           end
         end
       end

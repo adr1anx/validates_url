@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 class User < ActiveRecord::Base
   validate_url :required_url
   validate_url :blank_url, :allow_blank => true
-  validate_url :nil_url, :allow_nil => true, :check_http => true, :message => "does not resolve"
+  validate_url :nil_url, :allow_nil => true, :check_http => true
 end
 
 describe "validate url format" do
@@ -90,25 +90,26 @@ describe "validates the url is an actual web page" do
     @user = User.new({:required_url => "http://www.example.com",
                       :blank_url => "",
                       :nil_url => nil})
+
     @mock_success = mock("Net::HTTPSuccess",:null_object=>true)
-    @mock_fail = mock("Net::HTTPClientError",:null_object=>true)
-    @mock_success.stub!(:code).and_return("200")
-    @mock_fail.stub!(:code).and_return("404")
-    @mock_http = mock("Net::HTTP",:null_object=>true)
+    @mock_success.stub!(:is_a?).and_return(Net::HTTPSuccess)
+    @mock_fail = mock("Net::HTTPNotFound",:null_object=>true)
+    
   end
   
-  it "should throw an error with a url that doesn't resolve" do
+  it "should throw  error with a url that doesn't resolve" do
     Net::HTTP.should_receive('get_response').with(URI.parse("http://www.example.com/d")).and_return(@mock_fail)
       
     @user.nil_url = "http://www.example.com/d"
     @user.save
     @user.errors.on(:nil_url).should_not be_nil
+    @user.errors.on(:nil_url).should eql("does not resolve")
   end
   
   it "should not throw an error with a url that does resolve" do
-    Net::HTTP.should_receive('get_response').with(URI.parse("http://www.example.com/")).and_return(@mock_success)
+    Net::HTTP.should_receive('get_response').with(URI.parse("http://www.example.com")).and_return(@mock_success)
     
-    @user.nil_url = "http://www.example.com/"
+    @user.nil_url = "http://www.example.com"
     @user.save
     @user.errors.on(:nil_url).should be_nil
   end
